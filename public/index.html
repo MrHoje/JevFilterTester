@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jev 유해성 필터 테스트</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* 색 토큰은 Watermelon UI 라이트·다크 테마에서 가져왔다.
+     primary가 밝은 라임이라 그 위 글자는 두 테마 모두 어두운 색으로 둔다. */
+  :root {
+    --bg: lab(100 0 0);
+    --card: lab(100 0 0);
+    --fg: lab(2.75 0 0);
+    --muted: lab(96.52 0 0);
+    --muted-fg: lab(48.5 0 0);
+    --primary: lab(75.32 -46.65 86.18);
+    --primary-fg: lab(2.75 0 0);
+    --destructive: lab(49.07 69.34 49.63);
+    --border: lab(90.95 0 0);
+    --input: lab(90.95 0 0);
+    --radius: 0.625rem;
+    color-scheme: light;
+  }
+  :root[data-theme="dark"] {
+    --bg: lab(2.75 0 0);
+    --card: lab(7.78 0 0);
+    --fg: lab(98.26 0 0);
+    --muted: lab(15.2 0 0);
+    --muted-fg: lab(66.13 0 0);
+    --destructive: lab(63.71 60.75 31.31);
+    --border: lab(100 0 0 / 0.1);
+    --input: lab(100 0 0 / 0.15);
+    color-scheme: dark;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: lab(2.75 0 0);
+      --card: lab(7.78 0 0);
+      --fg: lab(98.26 0 0);
+      --muted: lab(15.2 0 0);
+      --muted-fg: lab(66.13 0 0);
+      --destructive: lab(63.71 60.75 31.31);
+      --border: lab(100 0 0 / 0.1);
+      --input: lab(100 0 0 / 0.15);
+      color-scheme: dark;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 48px 20px;
+    background: var(--bg); color: var(--fg);
+    font-family: "Inter", system-ui, "Malgun Gothic", sans-serif;
+    font-size: 15px; line-height: 1.55;
+  }
+  .wrap { max-width: 900px; margin: 0 auto; }
+  .head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  h1 { font-size: 1.35rem; font-weight: 600; margin: 0 0 6px; letter-spacing: -0.01em; }
+  #theme {
+    flex: none; background: transparent; color: var(--muted-fg);
+    border: 1px solid var(--border); border-radius: calc(var(--radius) - 2px);
+    padding: 6px 12px; font-size: .8rem; font-weight: 400;
+  }
+  #theme:hover { color: var(--fg); opacity: 1; }
+  .sub { color: var(--muted-fg); font-size: .875rem; margin: 0 0 28px; }
+
+  .card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 18px;
+  }
+  .card + .card { margin-top: 16px; }
+
+  textarea {
+    width: 100%; min-height: 110px; resize: vertical;
+    background: var(--muted); color: var(--fg);
+    border: 1px solid var(--input); border-radius: calc(var(--radius) - 2px);
+    padding: 12px 14px; font: inherit;
+    transition: border-color .15s cubic-bezier(.4,0,.2,1);
+  }
+  textarea:focus { outline: none; border-color: var(--primary); }
+  textarea::placeholder { color: var(--muted-fg); }
+
+  .actions { display: flex; align-items: center; gap: 12px; margin-top: 12px; }
+  button {
+    background: var(--primary); color: var(--primary-fg);
+    border: 0; border-radius: calc(var(--radius) - 2px);
+    padding: 9px 20px; font: inherit; font-weight: 500; cursor: pointer;
+    transition: opacity .15s cubic-bezier(.4,0,.2,1);
+  }
+  button:hover:not(:disabled) { opacity: .88; }
+  button:disabled { opacity: .45; cursor: default; }
+  .hint { color: var(--muted-fg); font-size: .8rem; }
+
+  .verdict { display: flex; align-items: center; gap: 10px; font-weight: 600; margin-bottom: 18px; }
+  .dot { width: 9px; height: 9px; border-radius: 50%; flex: none; }
+  .pass .dot { background: var(--primary); }
+  .block .dot { background: var(--destructive); }
+  .block .tags { color: var(--muted-fg); font-weight: 400; font-size: .875rem; }
+
+  .row { display: grid; grid-template-columns: 86px 1fr 78px; align-items: center; gap: 10px; }
+  .row .name { white-space: nowrap; }
+  .row + .row { margin-top: 10px; }
+  .row .name { font-size: .875rem; color: var(--muted-fg); }
+  .bar { position: relative; height: 6px; background: var(--muted); border-radius: 999px; }
+  .fill { height: 100%; border-radius: 999px; background: var(--primary); transition: width .3s cubic-bezier(.4,0,.2,1); }
+  .fill.over { background: var(--destructive); }
+  .mark { position: absolute; top: -3px; width: 1px; height: 12px; background: var(--input); }
+  .num { text-align: right; font-size: .8rem; font-variant-numeric: tabular-nums; color: var(--muted-fg); }
+  .num.over { color: var(--destructive); }
+
+  .panes { display: grid; grid-template-columns: 1fr 1fr; }
+  .panes > :first-child { padding-right: 26px; }
+  .panes > :last-child { padding-left: 26px; border-left: 1px solid var(--border); }
+  @media (max-width: 860px) {
+    .panes { grid-template-columns: 1fr; }
+    .panes > :first-child { padding: 0 0 22px; }
+    .panes > :last-child { padding: 22px 0 0; border-left: 0; border-top: 1px solid var(--border); }
+  }
+  .section-title { font-size: .8rem; color: var(--muted-fg); margin-bottom: 14px; }
+  .pick { font-weight: 600; margin-bottom: 14px; }
+  .pick .conf { color: var(--muted-fg); font-weight: 400; font-size: .875rem; margin-left: 8px; }
+  .fill.pickd { background: lab(64.27 57.18 90.36); }
+
+  .meta {
+    margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border);
+    color: var(--muted-fg); font-size: .78rem;
+  }
+  .err { color: var(--destructive); font-size: .875rem; word-break: break-all; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head">
+    <h1>Jev 유해성 필터 테스트</h1>
+    <button id="theme" type="button">테마</button>
+  </div>
+  <p class="sub">텍스트를 넣으면 항목별 확률과 임계값 기준 판정이 나옵니다. 막대 위 세로선이 임계값입니다.</p>
+
+  <div class="card">
+    <textarea id="text" placeholder="검사할 문장을 입력하세요"></textarea>
+    <div class="actions">
+      <button id="run">검사</button>
+      <span class="hint">Ctrl + Enter</span>
+    </div>
+  </div>
+
+  <div id="result"></div>
+</div>
+
+<script>
+const LABEL = {
+  profanity: "비속어", violence: "폭력성", sexual: "음란성", hate_self_harm: "혐오·자해",
+  jailbreak: "탈옥 시도", pii: "개인정보", illegal: "불법 요청", spam: "스팸",
+}
+const $text = document.getElementById("text")
+const $run = document.getElementById("run")
+const $result = document.getElementById("result")
+
+const $theme = document.getElementById("theme")
+// 저장값이 없으면 시스템 설정을 따른다. 사생활 보호 모드에서는 저장이 막힐 수 있다.
+try { const saved = localStorage.getItem("theme"); if (saved) document.documentElement.dataset.theme = saved } catch {}
+syncThemeLabel()
+
+$theme.addEventListener("click", () => {
+  const isDark = matchMedia("(prefers-color-scheme: dark)").matches
+  const current = document.documentElement.dataset.theme || (isDark ? "dark" : "light")
+  const next = current === "dark" ? "light" : "dark"
+  document.documentElement.dataset.theme = next
+  try { localStorage.setItem("theme", next) } catch {}
+  syncThemeLabel()
+})
+
+function syncThemeLabel() {
+  const isDark = document.documentElement.dataset.theme
+    ? document.documentElement.dataset.theme === "dark"
+    : matchMedia("(prefers-color-scheme: dark)").matches
+  $theme.textContent = isDark ? "라이트" : "다크"
+}
+
+$run.addEventListener("click", check)
+$text.addEventListener("keydown", (e) => { if (e.ctrlKey && e.key === "Enter") check() })
+
+async function check() {
+  const text = $text.value.trim()
+  if (!text || $run.disabled) return
+  $run.disabled = true
+  $run.textContent = "검사 중"
+  try {
+    const res = await fetch("/api/score", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text }),
+    })
+    const data = await res.json()
+    if (!res.ok) throw new Error(JSON.stringify(data.error))
+    render(data)
+  } catch (err) {
+    $result.innerHTML = `<div class="card err">오류: ${err.message}</div>`
+  } finally {
+    $run.disabled = false
+    $run.textContent = "검사"
+  }
+}
+
+function render(d) {
+  const rows = Object.keys(LABEL).map((k) => {
+    const v = d.scores[k], t = d.thresholds[k], over = v !== null && v >= t
+    return `<div class="row">
+      <span class="name">${LABEL[k]}</span>
+      <div class="bar">
+        <div class="fill${over ? " over" : ""}" style="width:${(v ?? 0) * 100}%"></div>
+        <div class="mark" style="left:${t * 100}%"></div>
+      </div>
+      <span class="num${over ? " over" : ""}">${v === null ? "-" : v.toFixed(2)} / ${t}</span>
+    </div>`
+  }).join("")
+
+  const verdict = d.blocked
+    ? `<div class="verdict block"><span class="dot"></span>차단<span class="tags">${d.flagged.map((k) => LABEL[k]).join(", ")}</span></div>`
+    : `<div class="verdict pass"><span class="dot"></span>통과</div>`
+
+  // Zen 가격표 기준: 입력 100만 토큰당 $0.042, 출력 무료
+  const usd = (d.usage.input_tokens * 0.042 / 1e6).toFixed(8)
+  const per10k = (d.usage.input_tokens * 0.042 / 100).toFixed(2)
+
+  $result.innerHTML = `<div class="card">
+    <div class="panes">
+      ${inquirySection(d.inquiry)}
+      <section><div class="section-title">유해성 필터</div>${verdict}${rows}</section>
+    </div>
+    ${urgencySection(d.urgent)}
+    <div class="meta">${d.ms}ms · 입력 ${d.usage.input_tokens} 토큰 · $${usd} · 1만 건당 $${per10k}</div>
+  </div>`
+}
+
+const INQUIRY_LABEL = {
+  simple: "단순문의", support: "기술지원", error: "오류", development: "개발요청",
+  sales: "계약·영업", training: "교육 요청", none: "해당없음",
+}
+
+function inquirySection(q) {
+  if (!q) return ""
+  const rows = Object.keys(INQUIRY_LABEL).map((k) => {
+    const p = q.probabilities?.[k] ?? 0
+    return `<div class="row">
+      <span class="name">${INQUIRY_LABEL[k]}</span>
+      <div class="bar"><div class="fill${k === q.choice ? " pickd" : ""}" style="width:${p * 100}%"></div></div>
+      <span class="num">${p.toFixed(2)}</span>
+    </div>`
+  }).join("")
+  return `<section>
+    <div class="section-title">EMR 문의사항</div>
+    <div class="pick">${INQUIRY_LABEL[q.choice] ?? q.choice}<span class="conf">확신도 ${q.confidence.toFixed(2)}</span></div>
+    ${rows}
+  </section>`
+}
+</script>
+</body>
+</html>
