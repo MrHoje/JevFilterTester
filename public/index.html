@@ -68,9 +68,10 @@
 
   .card {
     background: var(--card); border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 18px;
+    border-radius: var(--radius); padding: 30px;
   }
-  .card + .card { margin-top: 16px; }
+  /* 결과 카드는 #result 안에 들어가므로 .card 끼리 형제가 아니다. */
+  #result { display: block; margin-top: 18px; }
 
   textarea {
     width: 100%; min-height: 110px; resize: vertical;
@@ -101,7 +102,7 @@
 
   .row { display: grid; grid-template-columns: 86px 1fr 78px; align-items: center; gap: 10px; }
   .row .name { white-space: nowrap; }
-  .row + .row { margin-top: 10px; }
+  .row + .row { margin-top: 12px; }
   .row .name { font-size: .875rem; color: var(--muted-fg); }
   .bar { position: relative; height: 6px; background: var(--muted); border-radius: 999px; }
   .fill { height: 100%; border-radius: 999px; background: var(--primary); transition: width .3s cubic-bezier(.4,0,.2,1); }
@@ -115,8 +116,8 @@
   .panes > :last-child { padding-left: 26px; border-left: 1px solid var(--border); }
   @media (max-width: 860px) {
     .panes { grid-template-columns: 1fr; }
-    .panes > :first-child { padding: 0 0 22px; }
-    .panes > :last-child { padding: 22px 0 0; border-left: 0; border-top: 1px solid var(--border); }
+    .panes > :first-child { padding: 0 0 28px; }
+    .panes > :last-child { padding: 28px 0 0; border-left: 0; border-top: 1px solid var(--border); }
   }
   .section-title { font-size: .8rem; color: var(--muted-fg); margin-bottom: 14px; }
   .pick { font-weight: 600; margin-bottom: 14px; }
@@ -125,7 +126,7 @@
 
   .urgency {
     display: flex; align-items: center; gap: 12px;
-    margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border);
+    margin-top: 26px; padding-top: 22px; border-top: 1px solid var(--border);
   }
   .urgency .section-title { margin: 0; }
   .badge {
