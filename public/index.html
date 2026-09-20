@@ -123,6 +123,17 @@
   .pick .conf { color: var(--muted-fg); font-weight: 400; font-size: .875rem; margin-left: 8px; }
   .fill.pickd { background: lab(64.27 57.18 90.36); }
 
+  .urgency {
+    display: flex; align-items: center; gap: 12px;
+    margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border);
+  }
+  .urgency .section-title { margin: 0; }
+  .badge {
+    padding: 3px 12px; border-radius: 999px; font-size: .8rem; font-weight: 500;
+    background: var(--muted); color: var(--muted-fg);
+  }
+  .badge.hot { background: var(--destructive); color: lab(100 0 0); }
+
   .meta {
     margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border);
     color: var(--muted-fg); font-size: .78rem;
@@ -151,7 +162,7 @@
 
 <script>
 const LABEL = {
-  profanity: "비속어", violence: "폭력성", sexual: "음란성", hate_self_harm: "혐오·자해",
+  profanity: "비속어", violence: "폭력성", sexual_gambling: "음란·도박", hate_self_harm: "혐오·자해",
   jailbreak: "탈옥 시도", pii: "개인정보", illegal: "불법 요청", spam: "스팸",
 }
 const $text = document.getElementById("text")
@@ -238,6 +249,14 @@ function render(d) {
 const INQUIRY_LABEL = {
   simple: "단순문의", support: "기술지원", error: "오류", development: "개발요청",
   sales: "계약·영업", training: "교육 요청", none: "해당없음",
+}
+
+function urgencySection(urgent) {
+  if (urgent === null || urgent === undefined) return ""
+  return `<div class="urgency">
+    <span class="section-title">긴급도</span>
+    <span class="badge ${urgent ? "hot" : ""}">${urgent ? "긴급" : "일반"}</span>
+  </div>`
 }
 
 function inquirySection(q) {
