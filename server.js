@@ -8,8 +8,9 @@ import { judge, REQUEST_BODY } from "./shared/questions.js"
 
 const DIR = path.dirname(fileURLToPath(import.meta.url))
 const KEY_FILE = path.join(os.homedir(), "Desktop", "KEY", "Opencode-Zen-API.txt")
-const API_KEY = fs.readFileSync(KEY_FILE, "utf8").trim()
-const PORT = 8787
+// 환경변수가 없으면 로컬 키 파일을 쓴다.
+const API_KEY = process.env.JEV_API_KEY ?? fs.readFileSync(KEY_FILE, "utf8").trim()
+const PORT = process.env.PORT ?? 8787
 
 function callJev(text) {
   const body = JSON.stringify(REQUEST_BODY(text))
